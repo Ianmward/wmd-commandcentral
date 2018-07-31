@@ -1,0 +1,80 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "softwareag-commandcentral.fullname" . }}
+  labels:
+    app: {{ template "softwareag-commandcentral.name" . }}
+    chart: {{ template "softwareag-commandcentral.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "softwareag-commandcentral.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "softwareag-commandcentral.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      securityContext:
+        runAsUser: {{ default 0 .Values.RunAsUser }}
+{{- if and (.Values.RunAsUser) (.Values.FsGroup) }}
+{{- if not (eq .Values.RunAsUser 0.0) }}
+        fsGroup: {{ .Values.FsGroup }}
+{{- end }}
+{{- end }}
+      imagePullSecrets: 
+      - name: {{ .Values.image.pullSecret }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: https
+              containerPort: 8091
+              protocol: TCP
+          volumeMounts:
+            - name: commandcentral-data
+              mountPath: /opt/softwareag/profiles/SPM/configuration/provisioning
+          livenessProbe:
+            initialDelaySeconds: 600
+            periodSeconds: 30
+            httpGet:
+              path: /cce/web/#
+              port: https
+          readinessProbe:
+            initialDelaySeconds: 600
+            periodSeconds: 30
+            httpGet:
+              path: /cce/web/#
+              port: https
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+    nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      volumes:
+{{- if .Values.Persistence.volumes }}
+{{ toYaml .Values.Persistence.volumes | indent 6 }}
+{{- end }}
+      - name: commandcentral-logs
+        emptyDir: {}
+      - name: commandcentral-data
+     {{- if .Values.Persistence.Enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.Persistence.ExistingClaim | default (include "softwareag-commandcentral.fullname" .) }}
+      {{- else }}
+        emptyDir: {}
+      {{- end -}}
