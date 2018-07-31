@@ -27,7 +27,7 @@ podTemplate(
                 def registry = "docker.devopsinitiative.com"
                 repository = "${registry}/softwareag-commandcentral"
                 sh "helm list"
-		sh "helm delete softwareag-commandcentral --purge"
+		# sh "helm delete softwareag-commandcentral --purge"
                 sh "helm upgrade --install --wait --set image.repository=${repository},image.tag=10.2-server softwareag-commandcentral softwareag-commandcentral"
             }
         }
