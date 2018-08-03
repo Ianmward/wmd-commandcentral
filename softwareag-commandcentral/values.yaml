@@ -9,20 +9,19 @@ FsGroup: 1000
 
 image:
   repository: docker.devopsinitiative.com/softwareag/commandcentral
-  tag: 10.2-server
+  tag: 10.2-sagadmin
   pullPolicy: IfNotPresent
   pullSecret: regcred
 
 service:
   type: ClusterIP
-  port: 8090
+  port: 8091
 
 ingress:
   enabled: true
   annotations: 
-      nginx.ingress.kubernetes.io/ssl-redirect: "true"
-      nginx.ingress.kubernetes.io/rewrite-target: /
-      nginx.ingress.kubernetes.io/secure-backends: "true"
+      kubernetes.io/ingress.class: "nginx",
+      nginx.ingress.kubernetes.io/ssl-passthrough: "true"
   path: /
   host: commandcentral.devopsinitiative.com
   tls: {}
@@ -50,7 +49,8 @@ Persistence:
   ## A manually managed Persistent Volume and Claim
   ## Requires Persistence.Enabled: true
   ## If defined, PVC must be created manually before volume will be bound
-  # ExistingClaim:
+  # ExistingDataClaim:
+  # ExistingProvisioningClaim:
 
   ## jenkins data Persistent Volume Storage Class
   ## If defined, storageClassName: <storageClass>

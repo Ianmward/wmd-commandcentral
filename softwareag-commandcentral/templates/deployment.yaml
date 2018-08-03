@@ -26,55 +26,56 @@ spec:
         fsGroup: {{ .Values.FsGroup }}
 {{- end }}
 {{- end }}
-      imagePullSecrets: 
+{{- if .Values.image.pullSecret }}
+      imagePullSecrets:
       - name: {{ .Values.image.pullSecret }}
-      containers:
-        - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-            - name: https
-              containerPort: 8091
-              protocol: TCP
-          volumeMounts:
-            - name: commandcentral-data
-              mountPath: /opt/softwareag/profiles/SPM/configuration/provisioning
-          livenessProbe:
-            initialDelaySeconds: 600
-            periodSeconds: 30
-            httpGet:
-              path: /cce/web/#
-              port: https
-          readinessProbe:
-            initialDelaySeconds: 600
-            periodSeconds: 30
-            httpGet:
-              path: /cce/web/#
-              port: https
-          resources:
-{{ toYaml .Values.resources | indent 12 }}
-    {{- with .Values.nodeSelector }}
-    nodeSelector:
-{{ toYaml . | indent 8 }}
-    {{- end }}
-    {{- with .Values.affinity }}
-      affinity:
-{{ toYaml . | indent 8 }}
-    {{- end }}
-    {{- with .Values.tolerations }}
-      tolerations:
-{{ toYaml . | indent 8 }}
-    {{- end }}
-      volumes:
-{{- if .Values.Persistence.volumes }}
-{{ toYaml .Values.Persistence.volumes | indent 6 }}
 {{- end }}
-      - name: commandcentral-logs
-        emptyDir: {}
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+          - name: https
+            containerPort: 8091
+            protocol: TCP
+        volumeMounts:
+          - name: commandcentral-data
+            mountPath: /opt/softwareag/profiles/CCE/data/
+          - name: commandcentral-provisioning
+            mountPath: /opt/softwareag/profiles/SPM/configuration/provisioning"
+        livenessProbe:
+          initialDelaySeconds: 600
+          periodSeconds: 30
+          httpGet:
+            path: '/cce/web/#'
+            port: 8091
+            scheme: HTTPS
+        resources:
+{{ toYaml .Values.resources | indent 12 }}
+        readinessProbe:
+          initialDelaySeconds: 600
+          periodSeconds: 30
+          httpGet:
+            path: '/cce/web/#'
+            port: 8091
+            scheme: HTTPS
+      volumes:
       - name: commandcentral-data
      {{- if .Values.Persistence.Enabled }}
         persistentVolumeClaim:
-          claimName: {{ .Values.Persistence.ExistingClaim | default (include "softwareag-commandcentral.fullname" .) }}
+          claimName: {{ .Values.Persistence.ExistingDataClaim | default (include "softwareag-commandcentral.fullname" .) }}-data
       {{- else }}
         emptyDir: {}
-      {{- end -}}
+      {{- end }}
+      - name: commandcentral-provisioning
+     {{- if .Values.Persistence.Enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.Persistence.ExistingProvisioningClaim | default (include "softwareag-commandcentral.fullname" .) }}-provisioning
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+    {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+    {{- end }}
+

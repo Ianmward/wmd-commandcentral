@@ -6,7 +6,7 @@ metadata:
   annotations:
 {{ toYaml .Values.Persistence.Annotations | indent 4 }}
 {{- end }}
-  name: {{ template "softwareag-commandcentral.fullname" . }}-data
+  name: {{ template "softwareag-commandcentral.fullname" . }}-provisioning
   labels:
     app: {{ template "softwareag-commandcentral.fullname" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
