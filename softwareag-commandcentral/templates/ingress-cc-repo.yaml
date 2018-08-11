@@ -1,0 +1,36 @@
+{{- if .Values.ingressCcRepo.enabled -}}
+{{- $fullName := include "softwareag-commandcentral.fullname" . -}}
+{{- $ingressPath := .Values.ingressCcRepo.path -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}-cc-repo
+  labels:
+    app: {{ template "softwareag-commandcentral.name" . }}
+    chart: {{ template "softwareag-commandcentral.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+{{- with .Values.ingressCcRepo.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+{{- if .Values.ingressCcRepo.tls }}
+  tls:
+  {{- range .Values.ingressCcRepo.tls }}
+    - hosts:
+      {{- range .hosts }}
+        - {{ . }}
+      {{- end }}
+      secretName: {{ .secretName }}
+  {{- end }}
+{{- end }}
+  rules:
+    - host: {{ .Values.ingressCcRepo.host }}
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: {{ $fullName }}
+              servicePort: {{ .Values.service.repoPort }}
+{{- end }}
