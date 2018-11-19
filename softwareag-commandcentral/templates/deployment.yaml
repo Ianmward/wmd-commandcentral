@@ -39,13 +39,13 @@ spec:
             containerPort: 8091
             protocol: TCP
           - name: repo
-            containerPort: 8092
+            containerPort: 8090
             protocol: TCP
         volumeMounts:
           - name: commandcentral-data
-            mountPath: /opt/softwareag/profiles/CCE/data/
+            mountPath: /opt/sagtools/profiles/CCE/data/
           - name: commandcentral-provisioning
-            mountPath: /opt/softwareag/profiles/SPM/configuration/provisioning
+            mountPath: /opt/sagtools/profiles/SPM/configuration/provisioning
         livenessProbe:
           initialDelaySeconds: 600
           periodSeconds: 30
