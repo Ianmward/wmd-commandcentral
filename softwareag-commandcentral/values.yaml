@@ -9,14 +9,14 @@ FsGroup: 1724
 
 image:
   repository: docker.devopsinitiative.com/softwareag/commandcentral
-  tag: 10.2-sagadmin
+  tag: 10.4
   pullPolicy: IfNotPresent
   pullSecret: regcred
 
 service:
   type: ClusterIP
   port: 8091
-  repoPort: 8092
+  repoPort: 8090
 
 ingress:
   enabled: true
