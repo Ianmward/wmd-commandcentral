@@ -28,7 +28,7 @@ podTemplate(
                 repository = "${registry}/softwareag/commandcentral-server"
                 sh "helm list"
 		sh "# helm delete softwareag-commandcentral --purge"
-                sh "helm upgrade --install --wait --set image.repository=${repository},image.tag=10.3 softwareag-commandcentral softwareag-commandcentral"
+                sh "helm upgrade --install --wait --timeout=600 --set image.repository=${repository},image.tag=10.5 softwareag-commandcentral softwareag-commandcentral"
             }
         }
     }
